@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: server
+      dockerfile: Dockerfile
+    command: /bin/bash /var/www/app/server/start.sh
+    container_name: ansible_callback_plugin_api_post_app
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./:/var/www/app
+    working_dir: /var/www/app

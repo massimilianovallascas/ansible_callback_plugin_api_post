@@ -22,7 +22,7 @@ from os.path import basename
 DOCUMENTATION = '''
     author: Massimiliano Vallascas
     callback: api
-    callback_type: stdout
+    callback_type: stderr
     short_description: send playbook output to an external API
     version_added: 2.9
     description:
@@ -86,11 +86,11 @@ DOCUMENTATION = '''
 
 class CallbackModule(CallbackBase):
     CALLBACK_VERSION = 2.0
-    CALLBACK_TYPE = 'stdout'
+    CALLBACK_TYPE = 'stderr'
     CALLBACK_NAME = 'api'
     CALLBACK_NEEDS_WHITELIST = False
 
-    def __init__(self):
+    def __init__(self, display=None):
         self.api = {}
         self.ansible = {
             'host': socket.gethostname(),
@@ -102,12 +102,11 @@ class CallbackModule(CallbackBase):
             'version': None,
         }
         self.disable = False
-        self.framework = {}
         self.session = str(uuid.uuid4())  # uuid.uuid4().hex[:6]
         self.start_datetimes = {}
         self.user = getpass.getuser()
 
-        super(CallbackModule, self).__init__()
+        super(CallbackModule, self).__init__(display=display)
 
     def set_options(self, task_keys=None, var_options=None, direct=None):
         super(CallbackModule, self).set_options(task_keys=task_keys, var_options=var_options, direct=direct)
@@ -118,7 +117,7 @@ class CallbackModule(CallbackBase):
             'password': self.get_option('password'),
             'required_variables': self.get_option('required_variables').split(','),
             'skip_empty_task_name': self.get_option('skip_empty_task_name'),
-            'verbose': bool(self.get_option('verbose'),),
+            'verbose': bool(self.get_option('verbose')),
             'is_secure': True,
             'token': None,
         }
@@ -143,7 +142,7 @@ class CallbackModule(CallbackBase):
 
         if self.api['username'] is not None and self.api['password'] is not None:
             data = '%s:%s' % (self.api['username'], self.api['password'])
-            self.api['token'] = str(b64encode(data.encode("utf-8")), "utf-8")
+            self.api['token'] = str(b64encode(data.encode('utf-8')), 'utf-8')
         else:
             self._display.warning('API plugin expects to send data to public endpoint, no AUTH details provided')
 
@@ -167,7 +166,7 @@ class CallbackModule(CallbackBase):
                 self.ansible['version'] = result._task_fields['args'].get('_ansible_version')
 
             self.ansible["task_result"] = result
-            
+
             task_name = result._task.name or result._task.action
             task_uuid = result._task._uuid
 
@@ -238,7 +237,7 @@ class CallbackModule(CallbackBase):
         headers = {'Content-Type': 'application/json'}
 
         if self.api['token']:
-            headers['Authorization'] = 'Bearer %s' % self.api['token']
+            headers['Authorization'] = 'Basic %s' % self.api['token']
 
         message = "Posting to endpoint `{}`, data: `{}`, headers: `{}`".format(self.api['endpoint'], json_data, headers)
         self._display.debug(message)
