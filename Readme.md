@@ -37,8 +37,8 @@ In order to use the callback plugin with AWX you need to follow the steps below:
   - Click on the `Credential Types` option on the main menu (left side under `ADMINISTRATION` section)
   - Click on the Plus `+` button on the top right corner of the main page
   - Add a name for the new credential type you are creating
-  - Copy the content of the `awx_config/transaction_api_credentials-configuration.yml` file in the `INPUT CONFIGURATION` section
-  - Copy the content of the `awx_config/transaction_api_credentials-injector.yml` file in the `INJECTOR CONFIGURATION` section
+  - Copy the content of the `awx_config/api_credentials-configuration.yml` file in the `INPUT CONFIGURATION` section
+  - Copy the content of the `awx_config/api_credentials-injector.yml` file in the `INJECTOR CONFIGURATION` section
   - Click on the `SAVE` button
 
 - Create a new set of credentials
