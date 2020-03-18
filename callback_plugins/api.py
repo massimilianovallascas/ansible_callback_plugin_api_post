@@ -126,30 +126,31 @@ class CallbackModule(CallbackBase):
     def _check_options(self):
         if not self.api["endpoint"] or not self.api["username"] or not self.api["password"]:
             self._display.warning('Callback plugin disable, required variables not present. Plase check your configuration')
-            self.disabled = True
+            self.disable = True
 
-        pattern = r'(?i)^(http)://'
-        if re.match(pattern, self.api['endpoint']):
-            self.api['is_secure'] = False
-            self._display.warning('Endpoint without TSL, be careful, your data will be sent in plain text')
+        if not self.disable:
+            pattern = r'(?i)^(http)://'
+            if re.match(pattern, self.api['endpoint']):
+                self.api['is_secure'] = False
+                self._display.warning('Endpoint without TSL, be careful, your data will be sent in plain text')
 
-        pattern = r'(?i)^(http|https)://'
-        if not re.match(pattern, self.api['endpoint']):
-            self.api['endpoint'] = 'https://' + self.api['endpoint']
-            message = 'Endpoint without schema, prepending https://. The new endpoint is {}'.format(
-                self.api['endpoint'])
-            self._display.warning(message)
+            pattern = r'(?i)^(http|https)://'
+            if not re.match(pattern, self.api['endpoint']):
+                self.api['endpoint'] = 'https://' + self.api['endpoint']
+                message = 'Endpoint without schema, prepending https://. The new endpoint is {}'.format(
+                    self.api['endpoint'])
+                self._display.warning(message)
 
-        if self.api['username'] is not None and self.api['password'] is not None:
-            data = '%s:%s' % (self.api['username'], self.api['password'])
-            self.api['token'] = str(b64encode(data.encode('utf-8')), 'utf-8')
-        else:
-            self._display.warning('API plugin expects to send data to public endpoint, no AUTH details provided')
+            if self.api['username'] is not None and self.api['password'] is not None:
+                data = '%s:%s' % (self.api['username'], self.api['password'])
+                self.api['token'] = str(b64encode(data.encode('utf-8')), 'utf-8')
+            else:
+                self._display.warning('API plugin expects to send data to public endpoint, no AUTH details provided')
 
-        self.api['required_variables'] = [key for key in self.api['required_variables'] if key]
-        if self.api['required_variables']:
-            message = "required_variables variable set to `{}`".format(self.api['required_variables'])
-            self._display.warning(message)
+            self.api['required_variables'] = [key for key in self.api['required_variables'] if key]
+            if self.api['required_variables']:
+                message = "required_variables variable set to `{}`".format(self.api['required_variables'])
+                self._display.warning(message)
 
     def _runtime(self, result):
         runtime = float(0)
@@ -219,7 +220,7 @@ class CallbackModule(CallbackBase):
         return allowed
 
     def post_data(self, state, result, runtime):
-        if self._allowed_to_post():
+        if self._allowed_to_post() and not self.disable:
             data = self._set_payload(state, result, runtime)
 
             if data['post_flag']:
