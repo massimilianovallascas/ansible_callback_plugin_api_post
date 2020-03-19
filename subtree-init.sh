@@ -11,6 +11,11 @@ callbackPluginName="api.py"
 callbackPluginSubtreePath=${currentFolder}/${ansibleSubtreeFolder}/${callbackPluginsFolder}/${callbackPluginName}
 callbackPluginPath=${currentFolder}/${callbackPluginsFolder}/${callbackPluginName}
 
+if [[ ! -z $(git status -s) ]]; then
+    echo "Your repository has uncommitted changes, please commit your changes before running this script"
+    exit 1
+fi
+
 echo "Add the subtree as a remote"
 git remote add ${ansibleRemoteName} ${ansibleGitRepositoryUrl}
 echo "Add the subtree but now we can refer to the remote in short form"
